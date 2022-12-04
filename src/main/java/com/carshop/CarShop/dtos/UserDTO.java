@@ -27,7 +27,7 @@ public class UserDTO {
     private String username;
     private String password;
     private Set<Vehicle> vehicles = new HashSet<>();
-    private Collection<Role> roles = new ArrayList<>();
+    private Role role;
     private Cart cart;
     private Integer points;
 

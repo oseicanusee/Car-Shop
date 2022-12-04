@@ -60,7 +60,6 @@ public class VehicleDTO {
         this.year = vehicle.getYear();
         this.make = vehicle.getMake();
         this.model = vehicle.getModel();
-        this.mileage = vehicle.getMileage();
         this.imageURL = vehicle.getImageURL();
         this.cylinder = vehicle.getCylinder();
         this.engine_size = vehicle.getEngine_size();

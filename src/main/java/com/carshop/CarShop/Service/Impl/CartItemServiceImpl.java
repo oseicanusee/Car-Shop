@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,48 +40,43 @@ public class CartItemServiceImpl implements CartItemService {
     private MapStructMapper mapStructMapper;
 
     @Override
-    public CartItemDTO addItemToCart(long vehicleId, long userId) throws CartErrorException {
+    public void addItemToCart(long vehicleId, long cart_id) throws CartErrorException {
 
-        Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Vehicle> vehicleOptional = vehicleRepository.findById(userId);
+        Optional<Cart> cartOptional = cartRepository.findById(cart_id);
+        Optional<Vehicle> vehicleOptional = vehicleRepository.findById(vehicleId);
         CartItem cartItem = null;
-
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
+        Cart cart = null;
+        if (cartOptional.isPresent()) {
+            cart = cartOptional.get();
             // get the customer's cart -> then the get their cartItems set and then add the item.
             Vehicle vehicle = vehicleOptional.get();
-            Set<CartItem> items = user.getCart().getCartItems();
+            Set<CartItem> items = cart.getCartItems();
             for (CartItem item : items) {
-                if (item.getVehicle().getTitle().equals(vehicle.getTitle())) {
+                if (item.getVehicle().getId() == vehicleId) {
                     throw new CartErrorException("Cart Item in Cart Already");
                 }
             }
 
             cartItem = new CartItem(vehicleOptional.get());
-            Cart cart = userOptional.get().getCart();
+            cart = cartOptional.get();
             cart.getCartItems().add(cartItem);
             cartItemRepository.save(cartItem);
             cartRepository.save(cart);
         } else {
-            throw new ResourceNotFoundException("User", "id", userId);
+            throw new ResourceNotFoundException("User", "id", cart_id);
         }
-
-        CartItemDTO cartItemDTO = mapStructMapper.cartItemToCartItemDTO(cartItem);
-        return cartItemDTO;
     }
 
 
-    public CartItemDTO deleteItemFromCart(long vehicleId, long userId) throws CartErrorException {
-        Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Vehicle> vehicleOptional = vehicleRepository.findById(userId);
+    public void deleteItemFromCart(long vehicleId, long cart_id) throws CartErrorException {
+        Optional<Cart> cartOptional = cartRepository.findById(cart_id);
+
         CartItem cartItem = null;
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            cartItem = new CartItem(vehicleOptional.get());
-            Cart cart = user.getCart();
+        if (cartOptional.isPresent()) {
+            Cart cart = cartOptional.get();
 
             for(CartItem item : cart.getCartItems()){
-                if(item.equals(cartItem)){
+                if(item.getVehicle().getId() == vehicleId){
                     cart.getCartItems().remove(item);
                     cartRepository.save(cart);
                     cartItemRepository.delete(cartItem);
@@ -93,11 +87,8 @@ public class CartItemServiceImpl implements CartItemService {
             // get the customer's cart -> then the get their cartItems set and then add the item.
 
         } else {
-            throw new ResourceNotFoundException("User", "id", userId);
+            throw new ResourceNotFoundException("User", "id", vehicleId);
         }
-
-        CartItemDTO cartItemDTO = mapStructMapper.cartItemToCartItemDTO(cartItem);
-        return cartItemDTO;
     }
 
 

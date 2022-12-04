@@ -4,6 +4,6 @@ import com.carshop.CarShop.dtos.CartItemDTO;
 import com.carshop.CarShop.exceptions.CartErrorException;
 
 public interface CartItemService {
-        CartItemDTO addItemToCart(long vehicleId, long customerId) throws CartErrorException;
-        CartItemDTO deleteItemFromCart(long vehicleId, long customerId) throws CartErrorException;
+        void addItemToCart(long vehicleId, long cart_id) throws CartErrorException;
+        void deleteItemFromCart(long vehicleId, long ccart_Id) throws CartErrorException;
 }

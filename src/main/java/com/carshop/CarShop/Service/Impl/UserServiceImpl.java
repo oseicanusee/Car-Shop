@@ -2,25 +2,26 @@ package com.carshop.CarShop.Service.Impl;
 
 import com.carshop.CarShop.Service.UserService;
 import com.carshop.CarShop.configuration.MapStructMapper;
-import com.carshop.CarShop.configuration.UserDetailsImpl;
 import com.carshop.CarShop.dtos.RoleDTO;
 import com.carshop.CarShop.model.Cart;
-import com.carshop.CarShop.model.Enum_Role;
-import com.carshop.CarShop.payload.SignInDTO;
 import com.carshop.CarShop.dtos.UserDTO;
 import com.carshop.CarShop.dtos.VehicleDTO;
 import com.carshop.CarShop.exceptions.ResourceNotFoundException;
 import com.carshop.CarShop.exceptions.UserExistsException;
 import com.carshop.CarShop.model.Role;
 import com.carshop.CarShop.model.User;
-
 import com.carshop.CarShop.payload.SignUpDTO;
 import com.carshop.CarShop.repository.CartRepository;
 import com.carshop.CarShop.repository.RoleRepository;
 import com.carshop.CarShop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import net.minidev.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserServiceImpl implements UserDetailsService, UserService {
 
+    private static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -53,12 +55,24 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         Optional<User> userOptional = userRepository.findByUsername(username);
 
         if(userOptional.isPresent()){
-            User user = userOptional.get();
-               return UserDetailsImpl.build(user);
+            return new org.springframework.security.core.userdetails.User(userOptional.get().getUsername(), userOptional.get().getPassword(),
+                    getGrantedAuthority(userOptional.get()));
         } else {
             throw new UsernameNotFoundException("Username not found in the database");
         }
     }
+
+    private Collection<GrantedAuthority> getGrantedAuthority(User user) {
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
+        if (user.getRole().getName().equalsIgnoreCase("admin")) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }else {
+            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+        return authorities;
+    }
+
+
 
     @Override
     public List<UserDTO> getAllUsers() {
@@ -153,35 +167,42 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     public String createUser(SignUpDTO signUpDTO) throws UserExistsException {
+        //logger.info("User registration");
+        JSONObject jsonObject = new JSONObject();
 
         if (emailExists(signUpDTO.getEmail())) {
-            return "Error: Email already exists";
-        }
-        else if (usernameExists(signUpDTO.getUsername())) {
-            return ("Username exists already");
-        }
-
-        else {
+            jsonObject.put("Error", "Error: Email exists");
+            return jsonObject.toString();
+        } else if (usernameExists(signUpDTO.getUsername())) {
+            jsonObject.put("Error", "Error: Username exists");
+            return jsonObject.toString();
+        } else {
             User user = new User();
             user.setFirst_name(signUpDTO.getFirst_name());
             user.setLast_name(signUpDTO.getLast_name());
             user.setEmail(signUpDTO.getEmail());
             user.setUsername(signUpDTO.getUsername());
             user.setPoints(Integer.MAX_VALUE);
-            user.setPassword(encoder.encode(signUpDTO.getPassword()));
+            String password = signUpDTO.getPassword();
 
-            Role role = new Role(Enum_Role.ROLE_USER);
-            Collection<Role> roles = user.getRoles();
-            roles.add(role);
+            String hashedPassword = encoder.encode(password);
+            user.setPassword(hashedPassword);
+
+
+            Role role = new Role("USER");
             roleRepository.save(role);
-            user.setRoles(roles);
+            user.setRole(role);
 
             Cart cart = new Cart();
             cart.setUser(user);
             user.setCart(cart);
 
             userRepository.save(user);
-            return "User registered successfully";
+            if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+                return "User registered successfully";
+            } else {
+                return "User registration unsuccessful, Please check input";
+            }
         }
     }
 

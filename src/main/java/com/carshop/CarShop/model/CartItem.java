@@ -22,6 +22,7 @@ public class CartItem {
     @Column(name = "ITEM_ID")
     private long itemId;
 
+
     @ManyToOne
     @JoinColumn(name = "VEHICLE_ID")
     private Vehicle vehicle;

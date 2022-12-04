@@ -2,18 +2,22 @@ package com.carshop.CarShop.model;
 
 
 import com.carshop.CarShop.dtos.RoleDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Role {
 
     @Id
@@ -22,10 +26,13 @@ public class Role {
     private Long role_id;
 
     @Column(name = "name")
-    @Enumerated(EnumType.STRING)
-    private Enum_Role name;
+    private String name;
 
-    public Role(Enum_Role name){
+    @JsonIgnore
+    @OneToMany(targetEntity = User.class, mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<User> users;
+
+    public Role(String name){
         this.name = name;
     }
 

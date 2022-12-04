@@ -48,9 +48,6 @@ public class Vehicle {
     @Column(name = "MODEL")
     private String model;
 
-    @Column(name = "ODOMETER")
-    private long mileage;
-
     @Column(name = "IMAGE")
     private String imageURL;
 
@@ -80,7 +77,6 @@ public class Vehicle {
         this.year = vehicleDTO.getYear();
         this.make = vehicleDTO.getMake();
         this.model = vehicleDTO.getModel();
-        this.mileage = vehicleDTO.getMileage();
         this.imageURL = vehicleDTO.getImageURL();
         this.cylinder = vehicleDTO.getCylinder();
         this.engine_size = vehicleDTO.getEngine_size();
@@ -100,20 +96,19 @@ public class Vehicle {
     }
 
 
-    public Vehicle(int year, String make, String model, long mileage, String color,
+    public Vehicle(int year, String make, String model,String imageURL,
                    String cylinder, double engine_size, String drive_wheels,
                    Integer price, String fuel_Type) {
         super();
         this.year = year;
         this.model = model;
         this.make = make;
-        this.mileage = mileage;
         this.imageURL = imageURL;
         this.cylinder = cylinder;
         this.engine_size = engine_size;
         this.drive_wheels = drive_wheels;
         this.price = price;
-        this.title = title;
+        this.title = getTitle();
         this.fuel_Type = fuel_Type;
     }
 
@@ -126,7 +121,7 @@ public class Vehicle {
         if (this == o) return true;
         if (!(o instanceof Vehicle)) return false;
         Vehicle vehicle = (Vehicle) o;
-        return year == vehicle.year && mileage == vehicle.mileage && cylinder == vehicle.cylinder &&
+        return year == vehicle.year && cylinder == vehicle.cylinder &&
                 Double.compare(vehicle.engine_size, engine_size) == 0 && Objects.equals(id, vehicle.id)
                 && Objects.equals(title, vehicle.title) && Objects.equals(make, vehicle.make)
                 && Objects.equals(trim, vehicle.trim) && Objects.equals(model, vehicle.model) && Objects.equals(imageURL, vehicle.imageURL)  &&
@@ -135,7 +130,7 @@ public class Vehicle {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, year, make, trim, model, mileage, imageURL, cylinder, engine_size, transmission, drive_wheels, price, fuel_Type);
+        return Objects.hash(id, title, year, make, trim, model, imageURL, cylinder, engine_size, transmission, drive_wheels, price, fuel_Type);
     }
 
     @Override
@@ -147,7 +142,6 @@ public class Vehicle {
                 ", make='" + make + '\'' +
                 ", trim='" + trim + '\'' +
                 ", model='" + model + '\'' +
-                ", mileage=" + mileage +
                 ", imageURL='" + imageURL + '\'' +
                 ", cylinder=" + cylinder +
                 ", engine_size=" + engine_size +

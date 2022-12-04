@@ -3,8 +3,10 @@ package com.carshop.CarShop.Service.Impl;
 import com.carshop.CarShop.Service.CartService;
 import com.carshop.CarShop.configuration.MapStructMapper;
 import com.carshop.CarShop.dtos.CartDTO;
-import com.carshop.CarShop.exceptions.ResourceNotFoundException;
+import com.carshop.CarShop.dtos.CartItemDTO;
+import com.carshop.CarShop.dtos.UserDTO;
 import com.carshop.CarShop.model.Cart;
+import com.carshop.CarShop.model.CartItem;
 import com.carshop.CarShop.model.User;
 import com.carshop.CarShop.repository.CartRepository;
 import com.carshop.CarShop.repository.UserRepository;
@@ -28,7 +30,8 @@ public class CartServiceImpl implements CartService {
     private UserRepository userRepository;
     @Autowired
     private MapStructMapper mapStructMapper;
-
+    @Autowired
+    private UserServiceImpl userServiceImpl;
     // get all cart items.
       @Override
       public List<CartDTO> getAllCarts() {
@@ -37,12 +40,11 @@ public class CartServiceImpl implements CartService {
       }
 
     @Override
-    public CartDTO getUserCart(long userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if(userOptional.isPresent()){
-            Cart cart = userOptional.get().getCart();
-            return mapStructMapper.cartToCartDTO(cart);
-        } throw new ResourceNotFoundException("User", "id", userId);
+    public List<CartItemDTO> getUserCart(String username) {
+        UserDTO userDTO =  userServiceImpl.getUserByUsername(username);
+        List<CartItem> items = userDTO.getCart().getCartItems().stream().collect(Collectors.toList());
+        List<CartItemDTO> cartItemDTO = items.stream().map(item -> mapStructMapper.cartItemToCartItemDTO(item)).collect(Collectors.toList());
+        return cartItemDTO;
     }
 
     @Override
@@ -57,5 +59,19 @@ public class CartServiceImpl implements CartService {
           }
         return cartDTO;
    }
+
+    @Override
+    public List<CartItemDTO> getUserCartById(long cart_id) {
+        Optional<Cart> cartOptional =  cartRepository.findById(cart_id);
+        if(cartOptional.isPresent()) {
+            Cart cart = cartOptional.get();
+            List<CartItem> items = cart.getCartItems().stream().collect(Collectors.toList());
+            List<CartItemDTO> cartItemDTO = items.stream().map(item -> mapStructMapper.cartItemToCartItemDTO(item)).collect(Collectors.toList());
+            return cartItemDTO;
+        }
+        return null;
+    }
+
+
 
 }

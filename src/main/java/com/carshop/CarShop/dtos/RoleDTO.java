@@ -1,6 +1,5 @@
 package com.carshop.CarShop.dtos;
 
-import com.carshop.CarShop.model.Enum_Role;
 import com.carshop.CarShop.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,9 +17,9 @@ public class RoleDTO {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private Enum_Role name;
+    private String name;
 
-    public RoleDTO(Enum_Role name)
+    public RoleDTO(String name)
     {        this.name = name;
     }
 

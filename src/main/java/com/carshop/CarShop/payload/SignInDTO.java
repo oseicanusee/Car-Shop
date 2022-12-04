@@ -4,37 +4,57 @@ import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 public class SignInDTO {
+
     @NotBlank
-    private String userName;
+    private String username;
     @NotBlank
     private String password;
 
     public SignInDTO(){}
 
-    public SignInDTO(String userName, String password){
-        this.userName = userName;
+    public SignInDTO(String username, String password){
+        this.username = username;
         this.password = password;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SignInDTO)) return false;
-        SignInDTO signInDTO = (SignInDTO) o;
-        return userName.equals(signInDTO.userName) && password.equals(signInDTO.password);
+    public String toString() {
+        return "SignInDTO{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                '}';
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userName, password);
+        return super.hashCode();
     }
 
-    public String getUserName() {
-        return userName;
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public void setUserName(String username) {
+        this.username = username;
     }
 
     public String getPassword() {

@@ -84,7 +84,6 @@ public class VehicleServiceImpl implements VehicleService {
             Vehicle vehicle = vehicleOptional.get();
             vehicle.setCylinder(vehicleDTO.getCylinder());
             vehicle.setEngine_size(vehicleDTO.getEngine_size());
-            vehicle.setMileage(vehicleDTO.getMileage());
             vehicle.setImageURL(vehicleDTO.getImageURL());
             vehicle.setModel(vehicleDTO.getModel());
             vehicle.setMake(vehicleDTO.getMake());

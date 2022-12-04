@@ -19,8 +19,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -34,66 +36,49 @@ import java.util.Arrays;
  * @author jeff
  */
 
+
 @Configuration
-public class SpringConfiguration {
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SpringConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    UserServiceImpl userServiceImpl;
-//    @Autowired
-//    private AuthEntryPoint authEntryPoint;
-//
-//
+    private JwtTokenHelper tokenProvider;
+    @Autowired
+    private UserServiceImpl userDetailsService;
+    @Autowired
+    private AuthenticationEntryPoint authenticationEntryPoint;
+
+
     @Bean
-    public PasswordEncoder encoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-//
-//    @Bean
-//    public AuthenticationFilter authenticationFilter(){
-//        return new AuthenticationFilter();
-//    }
-//
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http.csrf().disable().cors().and()
-//                .sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-//                .authorizeRequests()
-//                .antMatchers(HttpMethod.GET, "api/vehicles/all").permitAll()
-//                .anyRequest().authenticated().and()
-//                .exceptionHandling()
-//                .authenticationEntryPoint(authEntryPoint).and()
-//                .addFilterBefore(authenticationFilter(),
-//                        UsernamePasswordAuthenticationFilter.class);
-//    }
-//
-//    @Bean
-//    public DaoAuthenticationProvider authenticationProvider(){
-//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(userServiceImpl);
-//        authenticationProvider.setPasswordEncoder(encoder());
-//
-//        return authenticationProvider;
-//    }
-//
-//    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception{
-//        return authenticationConfiguration.getAuthenticationManager();
-//    }
 
-//    @Bean
-//    CorsConfigurationSource corsConfigurationSource() {
-//        UrlBasedCorsConfigurationSource source =
-//                new UrlBasedCorsConfigurationSource();
-//        CorsConfiguration config = new CorsConfiguration();
-//        config.setAllowedOrigins(Arrays.asList("*"));
-//        config.setAllowedMethods(Arrays.asList("*"));
-//        config.setAllowedHeaders(Arrays.asList("*"));
-//        config.setAllowCredentials(false);
-//        config.applyPermitDefaultValues();
-//        source.registerCorsConfiguration("/**", config);
-//        return source;
-//    }
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        //Database authentication
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.cors().disable();
+        http.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                .authorizeRequests().antMatchers("/api/auth/*").permitAll()
+                .and().authorizeRequests().antMatchers("/api/vehicles/all").permitAll()
+                .anyRequest().authenticated().and().exceptionHandling().authenticationEntryPoint(authenticationEntryPoint).and()
+                .addFilterBefore(new JWTAuthenticationFilter(userDetailsService, tokenProvider), UsernamePasswordAuthenticationFilter.class);
+        http.csrf().disable().headers().frameOptions().disable();
+    }
+
+
 
 
 

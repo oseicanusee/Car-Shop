@@ -1,6 +1,7 @@
 package com.carshop.CarShop.model;
 
 import com.carshop.CarShop.dtos.UserDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +10,6 @@ import lombok.Setter;
 
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +18,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     @Id
@@ -36,19 +36,25 @@ public class User {
 
     @JsonIgnoreProperties
     @Column(name = "password")
-
     private String password;
-    @OneToOne(cascade = CascadeType.ALL)
+
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "CART_ID")
     private Cart cart;
+
+
     @Column(name = "points")
     private Integer points;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Vehicle> vehicles = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Collection<Role> roles = new ArrayList<>();
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     public User(UserDTO userDTO){
         this.first_name = userDTO.getFirst_name();
@@ -59,7 +65,7 @@ public class User {
         this.vehicles = userDTO.getVehicles();
         this.cart = userDTO.getCart();
         this.points = userDTO.getPoints();
-        this.roles = userDTO.getRoles();
+        this.role = userDTO.getRole();
     }
 
 
@@ -72,8 +78,8 @@ public class User {
     }
 
 
-    public Collection<Role> getRoles(){
-        return this.roles;
+    public Role getRole(){
+        return this.role;
     }
 
 
